@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 """BaseModel class for Air bnb"""
-from sqlalchemy.ext.declrative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 import uuid
 import models
 from datetime import datetime
-from sqlalchemy import String, Integer, Column, Datetime
+from sqlalchemy import String, Integer, Column, DateTime
 
 Base = declarative_base()
 
@@ -15,7 +15,7 @@ class BaseModel:
     updated_at = Column(DateTime, nullable=False, default=(datetime.utcnow()))
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Defining instance attributes
         Args:
         kwargs: argument for the constructor of the BaseModel
@@ -36,15 +36,14 @@ class BaseModel:
                 self.created_at = datetime.now()
             if "updated_at" not in kwargs:
                 self.updated_at = datetime.now()
-       else:
-           self.id = str(uuid.uuid4())
-           self.created_at = self.updated_at = datetime.now()
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = self.updated_at = datetime.now()
         
     def _str_(self):
-    """Returns a string
+        """Returns a string
             Return:
-            returns a string of class name, id and dictionary
-            """
+            returns a string of class name, id and dictionary"""
         return "[{}] ({}) {}".format( type(self)._name_, self.id, self._dict_)
     def _repr_(self):
         """return a string representation"""
@@ -70,7 +69,6 @@ def to_dict(self):
         del my_dict['_sa_instance_state']
     return my_dict
 
- def delete(self):
-        """ delete object
-        """
-        models.storage.delete(self)
+def delete(self):
+    """ delete object"""
+    models.get_storage.delete(self)
