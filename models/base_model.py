@@ -1,75 +1,63 @@
 #!/usr/bin/python3
-"""BaseModel class for Air bnb"""
-from sqlalchemy.ext.declarative import declarative_base
+
+"""
+    Base class that defines common attributes/methods
+    for other classes.
+"""
+from datetime import datetime
 import uuid
 import models
-from datetime import datetime
-from sqlalchemy import String, Integer, Column, DateTime
 
-Base = declarative_base()
 
 class BaseModel:
-    """This class will define its attributes and classes"""
-    id = Column(String(50), unique=True, nullable=False, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=(datetime.utcnow()))
-    updated_at = Column(DateTime, nullable=False, default=(datetime.utcnow()))
-
-
+    """
+        Definition of Basemodel class.
+    """
     def __init__(self, *args, **kwargs):
-        """Defining instance attributes
-        Args:
-        kwargs: argument for the constructor of the BaseModel
-        Attributes
-        id: unique id generated
-        create_at: creation date
-        update_at: update date
+        """
+            Initializes an instance of BaseModel.
         """
         if kwargs:
-            for key, value in kwargs.items():
-                if key == "created_at" or key == "updated_at":
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                if key != "__class__":
-                    setattr(self, key, value)
-            if "id" not in kwargs:
-                self.id = str(uuid.uuid4())
-            if "created_at" not in kwargs:
-                self.created_at = datetime.now()
-            if "updated_at" not in kwargs:
-                self.updated_at = datetime.now()
+            for key, val in kwargs.items():
+                if "created_at" == key:
+                    self.created_at = datetime.strptime(kwargs["created_at"],
+                                                        "%Y-%m-%dT%H:%M:%S.%f")
+                elif "updated_at" == key:
+                    self.updated_at = datetime.strptime(kwargs["updated_at"],
+                                                        "%Y-%m-%dT%H:%M:%S.%f")
+                elif "__class__" == key:
+                    pass
+                else:
+                    setattr(self, key, val)
         else:
-            models.storage.new(self)
             self.id = str(uuid.uuid4())
-            self.created_at = self.updated_at = datetime.now()
-        
-    def _str_(self):
-        """Returns a string
-            Return:
-            returns a string of class name, id and dictionary"""
-        return "[{}] ({}) {}".format( type(self)._name_, self.id, self._dict_)
-    def _repr_(self):
-        """return a string representation"""
-        return self._str_()
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            models.storage.new(self)
+
+    def __str__(self):
+        """
+            Prints a string representation of the
+            class name, id, and dictionary.
+        """
+        return("[{}] ({}) {}".format(self.__class__.__name__,
+                                     self.id, self.__dict__))
 
     def save(self):
-        """updates the public instance attribute updated_at to current
-     """
+        """
+            Updates the public instance attribute
+            `updated_at` with the current datetime.
+        """
         self.updated_at = datetime.now()
-        models.storage.new(self)
         models.storage.save()
 
-def to_dict(self):
-    """creates dictionary of the class  and returns
-    Return:
-        returns a dictionary of all the key values in __dict__
-    """
-    my_dict = dict(self.__dict__)
-    my_dict["__class__"] = str(type(self).__name__)
-    my_dict["created_at"] = self.created_at.isoformat()
-    my_dict["updated_at"] = self.updated_at.isoformat()
-    if '_sa_instance_state' in my_dict.keys():
-        del my_dict['_sa_instance_state']
-    return my_dict
-
-def delete(self):
-    """ delete object"""
-    models.get_storage.delete(self)
+    def to_dict(self):
+        """
+            Returns a dictionary containing all keys/values
+            of __dict__ of the instance.
+        """
+        myDict = dict(self.__dict__)
+        myDict["__class__"] = self.__class__.__name__
+        myDict["created_at"] = self.created_at.isoformat()
+        myDict["updated_at"] = self.updated_at.isoformat()
+        return myDict
